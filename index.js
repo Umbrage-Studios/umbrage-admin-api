@@ -1,18 +1,17 @@
 require("dotenv").config();
-const getDates = require("./utils/getDates");
+const { PORT } = process.env;
 const express = require("express");
 const app = express();
 var emoji = require("node-emoji");
 const { Sequelize } = require("sequelize");
-const keys = require("./keys");
-const Contracts = require("./models/contracts");
-const sequelize = new Sequelize(keys.PG_DATABASE, keys.PG_USER, keys.PG_PASSWORD, {
-  host: keys.PG_HOST,
+const config = require("./config/config");
+var models = require("./models");
+const sequelize = new Sequelize(config.database, config.username, config.password, {
+  host: config.host,
   dialect: "postgres",
-  port: keys.PG_PORT,
 });
 
-app.listen(process.env.PORT, async () => {
+app.listen(PORT, async () => {
   await sequelize
     .authenticate()
     .then(() => {
@@ -24,9 +23,8 @@ app.listen(process.env.PORT, async () => {
       console.log(`${emoji.get("middle_finger")}========== Failed to connect to the database ===========${emoji.get("middle_finger")} `);
     });
 
-  console.log(`${emoji.get("rocket")} Running on port ${process.env.PORT}`);
+  console.log(`${emoji.get("rocket")} Running on port ${PORT}`);
 
-  setInterval(async () => {
-    console.log(Contracts.findAll());
-  }, process.env.INTERVAL_TIME);
+  const contracts = await models.Contracts.findAll();
+  console.log(contracts);
 });
